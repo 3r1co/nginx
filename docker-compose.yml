@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf/:/etc/nginx/conf.d/:ro
+      - www_letsencrypt:/var/www/letsencrypt:ro
+      - etc_letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - outside
+  letsencrypt:
+    image: quay.io/letsencrypt/letsencrypt:latest
+    command: certonly --agree-tos -n -m $LE_MAIL --webroot -w /www --expand $DOMAIN_ARGS
+    volumes:
+      - etc_letsencrypt:/etc/letsencrypt
+      - www_letsencrypt:/www
+
+volumes:
+  etc_letsencrypt:
+  www_letsencrypt:
+
+networks:
+  outside:
+    external:
+      name: rp
